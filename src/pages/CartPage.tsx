@@ -65,7 +65,7 @@ export default function CartPage() {
 
                   {/* Info */}
                   <div style={s.itemInfo}>
-                    <p style={s.itemSeller}>{item.listing.account.name}</p>
+                    <p style={s.itemSeller}>{item.listing.account?.name ?? 'Unknown seller'}</p>
                     <p style={s.itemTitle}>{item.listing.title}</p>
                     {item.variant && <p style={s.itemVariant}>{item.variant.name}</p>}
                     <div style={s.itemPriceRow}>
