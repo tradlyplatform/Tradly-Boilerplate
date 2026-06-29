@@ -8,6 +8,7 @@ import type { Listing } from "@/types/listing.types";
 function ListingCard({ listing }: { listing: Listing }) {
 	const image = listing.images[0];
 	const isInCart = listing.in_cart;
+	const sellerName = listing.account?.name ?? "Unknown seller";
 
 	return (
 		<Link
@@ -44,10 +45,10 @@ function ListingCard({ listing }: { listing: Listing }) {
 					)}
 				</div>
 
-				{/* Info */}
+					{/* Info */}
 				<div style={cardStyles.body}>
 					<p style={cardStyles.seller}>
-						{listing.account.name}
+						{sellerName}
 					</p>
 					<p style={cardStyles.title}>
 						{listing.title}
@@ -295,4 +296,3 @@ const pageStyles: Record<string, React.CSSProperties> = {
 		color: "#333",
 	},
 };
-
