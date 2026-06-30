@@ -2,736 +2,217 @@ import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetOrderDetailQuery } from "@/state/orders/api";
 import Layout from "../components/Layout";
+import { Button } from "@/src/components/ui/button";
+import { Separator } from "@/src/components/ui/separator";
+import { ArrowLeft } from "lucide-react";
 
-// order_status is a numeric code; map to labels
 const STATUS_LABEL: Record<number, string> = {
-	1: "Pending",
-	2: "Confirmed",
-	3: "Processing",
-	4: "Ready to ship",
-	5: "Shipped",
-	6: "Delivered",
-	7: "Completed",
-	8: "Cancelled",
-	9: "Refunded",
-	10: "Failed",
+  1: "Pending", 2: "Confirmed", 3: "Processing", 4: "Ready to ship",
+  5: "Shipped", 6: "Delivered", 7: "Completed", 8: "Cancelled",
+  9: "Refunded", 10: "Failed",
 };
-const STATUS_STYLE: Record<number, { bg: string; color: string }> = {
-	1: { bg: "#fef9c3", color: "#854d0e" },
-	2: { bg: "#dbeafe", color: "#1e40af" },
-	3: { bg: "#e0f2fe", color: "#0369a1" },
-	4: { bg: "#ede9fe", color: "#6d28d9" },
-	5: { bg: "#ede9fe", color: "#6d28d9" },
-	6: { bg: "#dcfce7", color: "#15803d" },
-	7: { bg: "#dcfce7", color: "#15803d" },
-	8: { bg: "#fee2e2", color: "#b91c1c" },
-	9: { bg: "#f3f4f6", color: "#374151" },
-	10: { bg: "#fee2e2", color: "#b91c1c" },
+const STATUS_CLS: Record<number, string> = {
+  1: "bg-yellow-100 text-yellow-800",
+  2: "bg-blue-100 text-blue-800",
+  3: "bg-sky-100 text-sky-800",
+  4: "bg-purple-100 text-purple-800",
+  5: "bg-purple-100 text-purple-800",
+  6: "bg-green-100 text-green-800",
+  7: "bg-green-100 text-green-800",
+  8: "bg-red-100 text-red-800",
+  9: "bg-muted text-muted-foreground",
+  10: "bg-red-100 text-red-800",
 };
-
-// shipment status is also numeric
 const SHIPMENT_STATUS: Record<number, string> = {
-	1: "Pending",
-	2: "Picked up",
-	3: "In transit",
-	4: "Delivered",
-	5: "Returned",
+  1: "Pending", 2: "Picked up", 3: "In transit", 4: "Delivered", 5: "Returned",
 };
 
 function StatusBadge({ status }: { status: number }) {
-	const style = STATUS_STYLE[status] ?? {
-		bg: "#f3f4f6",
-		color: "#374151",
-	};
-	return (
-		<span
-			style={{
-				...s.badge,
-				background: style.bg,
-				color: style.color,
-			}}
-		>
-			{STATUS_LABEL[status] ?? `Status ${status}`}
-		</span>
-	);
+  const cls = STATUS_CLS[status] ?? "bg-muted text-muted-foreground";
+  return (
+    <span className={`inline-block px-3 py-0.5 rounded-full text-[11px] font-semibold ${cls}`}>
+      {STATUS_LABEL[status] ?? `Status ${status}`}
+    </span>
+  );
 }
 
 export default function OrderDetailPage() {
-	const { id = "" } = useParams<{ id: string }>();
-	const navigate = useNavigate();
+  const { id = "" } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-	const { data, isLoading, isError } = useGetOrderDetailQuery(id, {
-		skip: !id,
-	});
+  const { data, isLoading, isError } = useGetOrderDetailQuery(id, { skip: !id });
 
-	if (isLoading)
-		return (
-			<Layout>
-				<div style={s.center}>Loading order…</div>
-			</Layout>
-		);
-	if (isError || !data)
-		return (
-			<Layout>
-				<div style={s.errMsg}>Order not found.</div>
-			</Layout>
-		);
+  if (isLoading) return <Layout><div className="text-center py-20 text-muted-foreground text-sm">Loading order…</div></Layout>;
+  if (isError || !data) return <Layout><div className="text-center py-20 text-destructive text-sm">Order not found.</div></Layout>;
 
-	const { order } = data;
-	const items: any[] = (order as any).order_details ?? [];
-	const shipments: any[] = (order as any).shipments ?? [];
-	const shippingAddress = (order as any).shipping_address;
-	const grandTotal = (order as any).customer_pricing?.grand_total;
-	const offerTotal = (order as any).offer_total;
-	const shippingTotal = (order as any).shipping_total;
-	const taxTotal = (order as any).tax_total;
-	const paymentMethod = (order as any).payment_method;
-	const customerPricing: any[] =
-		(order as any).customer_pricing?.items ?? [];
+  const { order } = data;
+  const items: any[] = (order as any).order_details ?? [];
+  const shipments: any[] = (order as any).shipments ?? [];
+  const shippingAddress = (order as any).shipping_address;
+  const grandTotal = (order as any).customer_pricing?.grand_total;
+  const offerTotal = (order as any).offer_total;
+  const shippingTotal = (order as any).shipping_total;
+  const taxTotal = (order as any).tax_total;
+  const paymentMethod = (order as any).payment_method;
+  const customerPricing: any[] = (order as any).customer_pricing?.items ?? [];
+  const orderType: string = (order as any).type ?? "";
+  const isScheduled = orderType === "events" || orderType === "appointments";
 
-	return (
-		<Layout>
-			{/* Header */}
-			<div style={s.header}>
-				<button
-					onClick={() => navigate("/orders")}
-					style={s.backBtn}
-				>
-					← Orders
-				</button>
-				<div style={s.headerRight}>
-					<span style={s.refLabel}>
-						#{(order as any).order_reference}
-					</span>
-					<StatusBadge
-						status={(order as any).order_status}
-					/>
-				</div>
-			</div>
+  return (
+    <Layout>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-7">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/orders")} className="text-coffee-accent gap-1.5 pl-0 hover:bg-transparent hover:text-coffee-primary">
+          <ArrowLeft className="h-4 w-4" />
+          Orders
+        </Button>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-bold text-foreground">#{(order as any).order_reference}</span>
+          <StatusBadge status={(order as any).order_status} />
+        </div>
+      </div>
 
-			<div style={s.layout}>
-				{/* Main column */}
-				<div style={s.mainCol}>
-					{/* Items */}
-					<div style={s.section}>
-						<h2 style={s.sectionTitle}>Items</h2>
-						<div style={s.itemList}>
-							{items.map((item: any) => (
-								<div
-									key={item.id}
-									style={s.itemRow}
-								>
-									<div
-										style={
-											s.itemImgWrap
-										}
-									>
-										{item
-											.listing
-											?.images?.[0] ? (
-											<img
-												src={
-													item
-														.listing
-														.images[0]
-												}
-												alt={
-													item
-														.listing
-														.title
-												}
-												style={
-													s.itemImg
-												}
-											/>
-										) : (
-											<div
-												style={
-													s.imgPlaceholder
-												}
-											/>
-										)}
-									</div>
-									<div
-										style={
-											s.itemInfo
-										}
-									>
-										<p
-											style={
-												s.itemTitle
-											}
-										>
-											{item
-												.listing
-												?.title ??
-												`Item #${item.listing_id}`}
-										</p>
-										<p
-											style={
-												s.itemMeta
-											}
-										>
-											{item
-												.offer_price
-												?.formatted ??
-												item
-													.list_price
-													?.formatted}{" "}
-											×{" "}
-											{
-												item.quantity
-											}
-										</p>
-										{item.schedule_start_at && (
-											<p style={s.scheduleTag}>
-												📅{" "}
-												{new Date(item.schedule_start_at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
-												{" · "}
-												{new Date(item.schedule_start_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
-												{item.schedule_end_at && (
-													<> – {new Date(item.schedule_end_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</>
-												)}
-											</p>
-										)}
-									</div>
-									<span
-										style={
-											s.itemLineTotal
-										}
-									>
-										{item
-											.offer_price
-											?.formatted ??
-											item
-												.list_price
-												?.formatted}
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+        {/* Main column */}
+        <div className="flex flex-col gap-5">
+          {/* Items */}
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="font-display text-base font-bold text-foreground mb-5">Items</h2>
+            <div className="flex flex-col gap-5">
+              {items.map((item: any) => (
+                <div key={item.id} className="flex gap-4 items-start">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-coffee-secondary/20">
+                    {item.listing?.images?.[0]
+                      ? <img src={item.listing.images[0]} alt={item.listing.title} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full bg-muted" />
+                    }
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground mb-1">{item.listing?.title ?? `Item #${item.listing_id}`}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.offer_price?.formatted ?? item.list_price?.formatted} × {item.quantity}
+                    </p>
+                    {isScheduled && item.schedule_start_at && (
+                      <p className="text-[11px] text-coffee-accent font-medium mt-1">
+                        📅 {new Date(item.schedule_start_at).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                        {" · "}
+                        {new Date(item.schedule_start_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+                        {item.schedule_end_at && <> – {new Date(item.schedule_end_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</>}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-foreground flex-shrink-0">
+                    {item.offer_price?.formatted ?? item.list_price?.formatted}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
 
-					{/* Shipments */}
-					{shipments.length > 0 && (
-						<div style={s.section}>
-							<h2 style={s.sectionTitle}>
-								Shipments
-							</h2>
-							{shipments.map(
-								(shipment: any) => (
-									<div
-										key={
-											shipment.id
-										}
-										style={
-											s.shipmentBox
-										}
-									>
-										<div
-											style={
-												s.shipRow
-											}
-										>
-											<span
-												style={
-													s.shipLabel
-												}
-											>
-												Seller
-											</span>
-											<span
-												style={
-													s.shipValue
-												}
-											>
-												{
-													shipment
-														.account
-														?.name
-												}
-											</span>
-										</div>
-										<div
-											style={
-												s.shipRow
-											}
-										>
-											<span
-												style={
-													s.shipLabel
-												}
-											>
-												Status
-											</span>
-											<span
-												style={
-													s.shipValue
-												}
-											>
-												{SHIPMENT_STATUS[
-													shipment
-														.status
-												] ??
-													`Status ${shipment.status}`}
-											</span>
-										</div>
-										<div
-											style={
-												s.shipRow
-											}
-										>
-											<span
-												style={
-													s.shipLabel
-												}
-											>
-												Method
-											</span>
-											<span
-												style={
-													s.shipValue
-												}
-											>
-												{shipment
-													.shipping_method
-													?.name ??
-													"—"}
-											</span>
-										</div>
-										{shipment
-											.tracking
-											?.tracking_number && (
-											<div
-												style={
-													s.shipRow
-												}
-											>
-												<span
-													style={
-														s.shipLabel
-													}
-												>
-													Tracking
-												</span>
-												<span
-													style={{
-														...s.shipValue,
-														fontFamily:
-															"monospace",
-														fontWeight: 600,
-													}}
-												>
-													{
-														shipment
-															.tracking
-															.tracking_number
-													}
-												</span>
-											</div>
-										)}
-									</div>
-								),
-							)}
-						</div>
-					)}
+          {/* Shipments */}
+          {shipments.length > 0 && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="font-display text-base font-bold text-foreground mb-4">Shipments</h2>
+              {shipments.map((shipment: any) => (
+                <div key={shipment.id} className="flex flex-col gap-2 mb-4 last:mb-0">
+                  {[
+                    ['Seller', shipment.account?.name],
+                    ['Status', SHIPMENT_STATUS[shipment.status] ?? `Status ${shipment.status}`],
+                    ['Method', shipment.shipping_method?.name ?? '—'],
+                    ...(shipment.tracking?.tracking_number ? [['Tracking', shipment.tracking.tracking_number]] : []),
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{label}</span>
+                      <span className="text-foreground font-medium">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
 
-					{/* Delivery address */}
-					{shippingAddress?.address_line_1 && (
-						<div style={s.section}>
-							<h2 style={s.sectionTitle}>
-								Delivery address
-							</h2>
-							<div style={s.addressBox}>
-								{shippingAddress.name && (
-									<p
-										style={
-											s.addressLine
-										}
-									>
-										{
-											shippingAddress.name
-										}
-									</p>
-								)}
-								<p
-									style={
-										s.addressLine
-									}
-								>
-									{
-										shippingAddress.address_line_1
-									}
-								</p>
-								{shippingAddress.address_line_2 && (
-									<p
-										style={
-											s.addressLine
-										}
-									>
-										{
-											shippingAddress.address_line_2
-										}
-									</p>
-								)}
-								<p
-									style={
-										s.addressLine
-									}
-								>
-									{[
-										shippingAddress.city,
-										shippingAddress.state,
-										shippingAddress.post_code,
-									]
-										.filter(
-											Boolean,
-										)
-										.join(
-											", ",
-										)}
-								</p>
-								<p
-									style={
-										s.addressLine
-									}
-								>
-									{
-										shippingAddress.country
-									}
-								</p>
-								{shippingAddress.phone_number && (
-									<p
-										style={
-											s.addressLine
-										}
-									>
-										{
-											shippingAddress.phone_number
-										}
-									</p>
-								)}
-							</div>
-						</div>
-					)}
-				</div>
+          {/* Delivery address */}
+          {shippingAddress?.address_line_1 && (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="font-display text-base font-bold text-foreground mb-4">Delivery address</h2>
+              <div className="text-sm text-foreground space-y-0.5">
+                {shippingAddress.name && <p className="font-medium">{shippingAddress.name}</p>}
+                <p className="text-muted-foreground">{shippingAddress.address_line_1}</p>
+                {shippingAddress.address_line_2 && <p className="text-muted-foreground">{shippingAddress.address_line_2}</p>}
+                <p className="text-muted-foreground">{[shippingAddress.city, shippingAddress.state, shippingAddress.post_code].filter(Boolean).join(", ")}</p>
+                <p className="text-muted-foreground">{shippingAddress.country}</p>
+                {shippingAddress.phone_number && <p className="text-muted-foreground">{shippingAddress.phone_number}</p>}
+              </div>
+            </div>
+          )}
+        </div>
 
-				{/* Side — order summary */}
-				<div style={s.sideCol}>
-					<div style={s.summaryCard}>
-						<h2 style={s.sectionTitle}>
-							Summary
-						</h2>
+        {/* Summary sidebar */}
+        <div className="bg-card border border-border rounded-xl p-6 sticky top-24">
+          <h2 className="font-display text-base font-bold text-foreground mb-5">Summary</h2>
 
-						{/* Use customer_pricing breakdown if available */}
-						{customerPricing.length > 0 ? (
-							customerPricing.map(
-								(line: any) => (
-									<div
-										key={
-											line.type
-										}
-										style={
-											s.sumRow
-										}
-									>
-										<span
-											style={
-												s.sumLabel
-											}
-										>
-											{
-												line.name
-											}
-										</span>
-										<span
-											style={
-												s.sumValue
-											}
-										>
-											{
-												line
-													.amount
-													?.formatted
-											}
-										</span>
-									</div>
-								),
-							)
-						) : (
-							<>
-								<div style={s.sumRow}>
-									<span
-										style={
-											s.sumLabel
-										}
-									>
-										Subtotal
-									</span>
-									<span
-										style={
-											s.sumValue
-										}
-									>
-										{
-											offerTotal?.formatted
-										}
-									</span>
-								</div>
-								{shippingTotal?.amount >
-									0 && (
-									<div
-										style={
-											s.sumRow
-										}
-									>
-										<span
-											style={
-												s.sumLabel
-											}
-										>
-											Shipping
-										</span>
-										<span
-											style={
-												s.sumValue
-											}
-										>
-											{
-												shippingTotal.formatted
-											}
-										</span>
-									</div>
-								)}
-								{taxTotal?.amount >
-									0 && (
-									<div
-										style={
-											s.sumRow
-										}
-									>
-										<span
-											style={
-												s.sumLabel
-											}
-										>
-											Tax
-										</span>
-										<span
-											style={
-												s.sumValue
-											}
-										>
-											{
-												taxTotal.formatted
-											}
-										</span>
-									</div>
-								)}
-							</>
-						)}
+          <div className="space-y-2">
+            {customerPricing.length > 0
+              ? customerPricing.map((line: any) => (
+                  <div key={line.type} className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{line.name}</span>
+                    <span className="text-foreground">{line.amount?.formatted}</span>
+                  </div>
+                ))
+              : (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-foreground">{offerTotal?.formatted}</span>
+                  </div>
+                  {shippingTotal?.amount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-foreground">{shippingTotal.formatted}</span>
+                    </div>
+                  )}
+                  {taxTotal?.amount > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Tax</span>
+                      <span className="text-foreground">{taxTotal.formatted}</span>
+                    </div>
+                  )}
+                </>
+              )
+            }
+          </div>
 
-						<div style={s.divider} />
+          <Separator className="my-4" />
 
-						<div
-							style={{
-								...s.sumRow,
-								fontWeight: 700,
-							}}
-						>
-							<span style={{ fontSize: 16 }}>
-								Total
-							</span>
-							<span
-								style={{
-									fontSize: 18,
-									color: "#111",
-								}}
-							>
-								{grandTotal?.formatted}
-							</span>
-						</div>
+          <div className="flex justify-between items-center font-bold">
+            <span className="text-base">Total</span>
+            <span className="font-display text-lg text-coffee-accent">{grandTotal?.formatted}</span>
+          </div>
 
-						{/* Seller info */}
-						{(order as any).account && (
-							<>
-								<div
-									style={s.divider}
-								/>
-								<p style={s.metaLabel}>
-									Seller
-								</p>
-								<p style={s.metaValue}>
-									{
-										(
-											order as any
-										).account
-											.name
-									}
-								</p>
-							</>
-						)}
+          {/* Meta */}
+          {(order as any).account && (
+            <>
+              <Separator className="my-4" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Seller</p>
+              <p className="text-sm font-medium text-foreground">{(order as any).account.name}</p>
+            </>
+          )}
 
-						{/* Order date */}
-						<div style={s.divider} />
-						<p style={s.metaLabel}>Ordered on</p>
-						<p style={s.metaValue}>
-							{new Date(
-								(order as any)
-									.created_at *
-									1000,
-							).toLocaleDateString(
-								undefined,
-								{
-									year: "numeric",
-									month: "long",
-									day: "numeric",
-								},
-							)}
-						</p>
+          <Separator className="my-4" />
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Ordered on</p>
+          <p className="text-sm font-medium text-foreground">
+            {new Date((order as any).created_at * 1000).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+          </p>
 
-						{/* Payment method */}
-						{paymentMethod && (
-							<>
-								<div
-									style={s.divider}
-								/>
-								<p style={s.metaLabel}>
-									Payment
-								</p>
-								<p style={s.metaValue}>
-									{
-										paymentMethod.name
-									}
-								</p>
-							</>
-						)}
-					</div>
-				</div>
-			</div>
-		</Layout>
-	);
+          {paymentMethod && (
+            <>
+              <Separator className="my-4" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Payment</p>
+              <p className="text-sm font-medium text-foreground">{paymentMethod.name}</p>
+            </>
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
 }
-
-const s: Record<string, React.CSSProperties> = {
-	center: {
-		textAlign: "center",
-		padding: 80,
-		color: "#888",
-		fontSize: 15,
-	},
-	errMsg: {
-		textAlign: "center",
-		padding: 80,
-		color: "#b91c1c",
-		fontSize: 14,
-	},
-	header: {
-		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 28,
-	},
-	backBtn: {
-		background: "none",
-		border: "none",
-		cursor: "pointer",
-		fontSize: 14,
-		color: "#2563eb",
-		padding: 0,
-	},
-	headerRight: { display: "flex", alignItems: "center", gap: 12 },
-	refLabel: { fontSize: 15, fontWeight: 700, color: "#111" },
-	badge: {
-		display: "inline-block",
-		padding: "4px 12px",
-		borderRadius: 20,
-		fontSize: 12,
-		fontWeight: 600,
-	},
-	layout: {
-		display: "grid",
-		gridTemplateColumns: "1fr 300px",
-		gap: 28,
-		alignItems: "start",
-	},
-	mainCol: { display: "flex", flexDirection: "column", gap: 16 },
-	sideCol: {},
-	section: {
-		background: "#fff",
-		borderRadius: 12,
-		padding: 24,
-		boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-	},
-	sectionTitle: {
-		fontSize: 15,
-		fontWeight: 700,
-		color: "#111",
-		margin: "0 0 16px",
-	},
-	itemList: { display: "flex", flexDirection: "column", gap: 16 },
-	itemRow: { display: "flex", gap: 14, alignItems: "flex-start" },
-	itemImgWrap: {
-		width: 64,
-		height: 64,
-		borderRadius: 8,
-		overflow: "hidden",
-		flexShrink: 0,
-		background: "#f0f0f0",
-	},
-	itemImg: { width: "100%", height: "100%", objectFit: "cover" },
-	imgPlaceholder: { width: "100%", height: "100%", background: "#e5e5e5" },
-	itemInfo: { flex: 1 },
-	itemTitle: {
-		margin: "0 0 3px",
-		fontSize: 14,
-		fontWeight: 600,
-		color: "#111",
-	},
-	itemMeta: { margin: 0, fontSize: 13, color: "#666" },
-	scheduleTag: { margin: '3px 0 0', fontSize: 12, color: '#2563eb', fontWeight: 500 },
-	itemLineTotal: {
-		fontSize: 14,
-		fontWeight: 700,
-		color: "#111",
-		whiteSpace: "nowrap",
-		flexShrink: 0,
-	},
-	shipmentBox: {
-		display: "flex",
-		flexDirection: "column",
-		gap: 8,
-		marginBottom: 16,
-	},
-	shipRow: { display: "flex", justifyContent: "space-between" },
-	shipLabel: { fontSize: 13, color: "#888" },
-	shipValue: { fontSize: 13, color: "#111" },
-	addressBox: { display: "flex", flexDirection: "column", gap: 2 },
-	addressLine: { margin: 0, fontSize: 14, color: "#333" },
-	summaryCard: {
-		background: "#fff",
-		borderRadius: 12,
-		padding: 24,
-		boxShadow: "0 1px 6px rgba(0,0,0,0.07)",
-		position: "sticky",
-		top: 24,
-	},
-	sumRow: {
-		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 10,
-	},
-	sumLabel: { fontSize: 14, color: "#555" },
-	sumValue: { fontSize: 14, color: "#111" },
-	divider: { height: 1, background: "#e5e5e5", margin: "14px 0" },
-	metaLabel: {
-		margin: "0 0 4px",
-		fontSize: 11,
-		color: "#999",
-		textTransform: "uppercase",
-		letterSpacing: 0.5,
-	},
-	metaValue: { margin: 0, fontSize: 14, color: "#111", fontWeight: 500 },
-};
-

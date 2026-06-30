@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Button } from '@/src/components/ui/button'
+import { ShoppingBag } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 // Stripe.js is loaded via CDN — declare minimal types needed
 declare global {
@@ -25,7 +28,7 @@ interface LocationState {
   order_reference: string
 }
 
-const STRIPE_PK = import.meta.env.VITE_STRIPE_PK ?? ''
+const STRIPE_PK = String(import.meta.env.VITE_STRIPE_PK ?? '')
 
 export default function PaymentPage() {
   const navigate = useNavigate()
@@ -53,7 +56,6 @@ export default function PaymentPage() {
     }
 
     const loadStripe = async () => {
-      // Load Stripe.js if not already present
       if (!window.Stripe) {
         await new Promise<void>((resolve, reject) => {
           const s = document.createElement('script')
@@ -99,7 +101,7 @@ export default function PaymentPage() {
     const result = await stripeRef.current.confirmPayment({
       elements: elementsRef.current,
       confirmParams: {
-        return_url: `${window.location.origin}/thank-you/${state!.order_reference}`,
+        return_url: `${window.location.origin}/checkouts/${state!.order_reference}/thank-you`,
       },
       redirect: 'if_required',
     })
@@ -108,41 +110,44 @@ export default function PaymentPage() {
       setError(result.error.message ?? 'Payment failed')
       setLoading(false)
     } else {
-      navigate(`/thank-you/${state!.order_reference}`)
+      navigate(`/checkouts/${state!.order_reference}/thank-you`)
     }
   }
 
   return (
-    <div style={s.page}>
-      <div style={s.card}>
-        <h1 style={s.title}>Complete payment</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 justify-center">
+            <ShoppingBag className="h-8 w-8 text-coffee-accent" />
+            <span className="font-display text-2xl font-bold text-foreground">Tradly</span>
+          </Link>
+        </div>
 
-        {error && <div style={s.errorBox}>{error}</div>}
+        <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-6">Complete payment</h1>
 
-        <div ref={mountRef} style={s.stripeMount} />
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3 text-sm mb-5">
+              {error}
+            </div>
+          )}
 
-        <button
-          style={{ ...s.btn, opacity: loading || !stripeReady ? 0.6 : 1 }}
-          disabled={loading || !stripeReady}
-          onClick={handlePay}
-        >
-          {loading ? 'Processing…' : 'Pay now'}
-        </button>
+          <div ref={mountRef} className="min-h-[160px] mb-6" />
 
-        <button style={s.cancelBtn} onClick={() => navigate(-1)}>
-          Go back
-        </button>
+          <Button
+            className="btn-hero w-full mb-3"
+            disabled={loading || !stripeReady}
+            onClick={handlePay}
+          >
+            {loading ? 'Processing…' : 'Pay now'}
+          </Button>
+
+          <Button variant="outline" className="btn-secondary w-full" onClick={() => navigate(-1)}>
+            Go back
+          </Button>
+        </div>
       </div>
     </div>
   )
-}
-
-const s: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', fontFamily: 'system-ui, sans-serif', padding: 16 },
-  card: { background: '#fff', borderRadius: 12, padding: 36, width: '100%', maxWidth: 480, boxShadow: '0 2px 16px rgba(0,0,0,0.08)' },
-  title: { margin: '0 0 24px', fontSize: 22, fontWeight: 700, color: '#111' },
-  stripeMount: { minHeight: 160, marginBottom: 24 },
-  btn: { width: '100%', padding: '14px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 600, cursor: 'pointer', marginBottom: 12 },
-  cancelBtn: { width: '100%', padding: '12px', background: 'transparent', color: '#666', border: '1px solid #ddd', borderRadius: 8, fontSize: 14, cursor: 'pointer' },
-  errorBox: { background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 8, padding: '10px 14px', marginBottom: 20, fontSize: 13 },
 }

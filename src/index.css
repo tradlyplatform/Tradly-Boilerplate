@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 15% 97%;
+    --foreground: 25 35% 15%;
+    --card: 30 20% 95%;
+    --card-foreground: 25 35% 15%;
+    --popover: 30 15% 97%;
+    --popover-foreground: 25 35% 15%;
+    --coffee-primary: 25 45% 25%;
+    --coffee-primary-foreground: 30 15% 97%;
+    --coffee-secondary: 28 25% 85%;
+    --coffee-secondary-foreground: 25 35% 15%;
+    --coffee-accent: 20 55% 35%;
+    --coffee-accent-foreground: 30 15% 97%;
+    --coffee-warm: 35 35% 75%;
+    --coffee-warm-foreground: 25 35% 15%;
+    --primary: var(--coffee-primary);
+    --primary-foreground: var(--coffee-primary-foreground);
+    --secondary: var(--coffee-secondary);
+    --secondary-foreground: var(--coffee-secondary-foreground);
+    --accent: var(--coffee-accent);
+    --accent-foreground: var(--coffee-accent-foreground);
+    --muted: 30 20% 92%;
+    --muted-foreground: 25 25% 45%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 30 15% 97%;
+    --border: 28 20% 88%;
+    --input: 28 20% 88%;
+    --ring: 25 45% 25%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 25 35% 8%;
+    --foreground: 30 15% 95%;
+    --card: 25 35% 10%;
+    --card-foreground: 30 15% 95%;
+    --coffee-primary: 28 25% 85%;
+    --coffee-primary-foreground: 25 35% 15%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans; }
+  .font-display { font-family: 'Playfair Display', serif; }
+  .font-sans { font-family: 'Inter', sans-serif; }
+  .gradient-coffee { background: linear-gradient(135deg, hsl(var(--coffee-accent)) 0%, hsl(var(--coffee-primary)) 100%); }
+  .gradient-warm { background: linear-gradient(135deg, hsl(var(--coffee-warm)) 0%, hsl(var(--coffee-secondary)) 100%); }
+}
+
+@layer components {
+  .btn-hero {
+    @apply bg-coffee-accent text-coffee-accent-foreground hover:bg-coffee-primary transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+  }
+  .btn-secondary {
+    @apply bg-coffee-secondary text-coffee-secondary-foreground hover:bg-coffee-warm border border-coffee-accent/20 transition-all duration-300;
+  }
+  .card-product {
+    @apply bg-card border border-border rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden;
+  }
+  .text-hero {
+    @apply font-display text-4xl md:text-6xl font-bold text-foreground leading-tight;
+  }
+  .text-subtitle {
+    @apply font-sans text-lg md:text-xl text-muted-foreground font-light;
+  }
+  .section-padding {
+    @apply py-16 md:py-24 px-4;
+  }
+}

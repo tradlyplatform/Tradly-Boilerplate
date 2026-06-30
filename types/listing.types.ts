@@ -6,29 +6,9 @@ export interface Money {
 	formatted: string; // e.g. "$ 23.00"
 }
 
-// ─── Category ─────────────────────────────────────────────────────────────────
-
-export interface CategoryHierarchy {
-	id: number;
-	name: string;
-	level: number;
-	slug: string;
-}
-
-export interface Category {
-	id: number;
-	name: string;
-	slug: string;
-	parent: number; // 0 if root category
-	type: string; // "listings" | "accounts"
-	active: boolean;
-	image_path: string;
-	order_by: number;
-	description: string;
-	metadata: Record<string, unknown>;
-	sub_category: Category[];
-	hierarchy: CategoryHierarchy[];
-}
+// Re-exported from dedicated files to avoid duplicate exports in index.ts
+export type { Category, CategoryHierarchy } from './category.types'
+import type { Category, CategoryHierarchy } from './category.types'
 
 // ─── Account (seller/store) ───────────────────────────────────────────────────
 
@@ -47,18 +27,9 @@ export interface AccountCoordinates {
 	longitude: number;
 }
 
-export interface ShippingMethod {
-	id: number;
-	name: string;
-	type: string; // "pickup" | "delivery" | "storage_hub"
-	active: boolean;
-	order_by: number;
-	note: string;
-	logo_path: string;
-	channel: string;
-	metadata: Record<string, unknown>;
-	default: boolean;
-}
+// Re-exported from checkout.types to avoid duplicate export in index.ts
+export type { ShippingMethod } from './checkout.types'
+import type { ShippingMethod } from './checkout.types'
 
 export interface AccountRatingData {
 	rating_count_data: {

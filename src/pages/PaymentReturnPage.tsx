@@ -2,14 +2,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useGetOrderDetailQuery } from '@/state/orders/api'
 import Layout from '../components/Layout'
-
-// Tradly external_checkout redirects back with ?order_reference=...
-// This page verifies payment status then routes to success or failure.
+import { Button } from '@/src/components/ui/button'
+import { Loader2, CheckCircle2, XCircle, Clock, AlertTriangle } from 'lucide-react'
 
 type Status = 'checking' | 'success' | 'failed' | 'timeout' | 'unknown'
 
 const POLL_INTERVAL_MS = 2000
-const POLL_TIMEOUT_MS = 30_000   // give up after 30s
+const POLL_TIMEOUT_MS = 30_000
 
 export default function PaymentReturnPage() {
   const navigate = useNavigate()
@@ -23,7 +22,6 @@ export default function PaymentReturnPage() {
   const [status, setStatus] = useState<Status>(orderRef ? 'checking' : 'unknown')
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Stop polling once we have a terminal status
   const isChecking = status === 'checking'
 
   const { data, isError } = useGetOrderDetailQuery(orderRef, {
@@ -32,7 +30,6 @@ export default function PaymentReturnPage() {
     refetchOnMountOrArgChange: true,
   })
 
-  // Start 30s timeout when we begin checking
   useEffect(() => {
     if (!isChecking) return
     timeoutRef.current = setTimeout(() => setStatus('timeout'), POLL_TIMEOUT_MS)
@@ -42,7 +39,6 @@ export default function PaymentReturnPage() {
   useEffect(() => {
     if (!data || !isChecking) return
     const order = (data as any).order
-    // payment_status: 1 = pending, 2 = paid, 3 = failed, 4 = refunded
     const paymentStatus: number = order?.payment_status ?? 1
     if (paymentStatus === 2) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
@@ -52,7 +48,6 @@ export default function PaymentReturnPage() {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
       setStatus('failed')
     }
-    // status 1 = still pending — keep polling until timeout
   }, [data, isChecking])
 
   useEffect(() => {
@@ -62,66 +57,65 @@ export default function PaymentReturnPage() {
     }
   }, [isError])
 
-  // Auto-navigate to thank-you on confirmed success
   useEffect(() => {
     if (status === 'success' && orderRef) {
-      navigate(`/thank-you/${orderRef}`, { replace: true })
+      navigate(`/checkouts/${orderRef}/thank-you`, { replace: true })
     }
   }, [status, orderRef])
 
   return (
     <Layout>
-      <div style={s.wrap}>
-        <div style={s.card}>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="bg-card border border-border rounded-2xl p-10 max-w-sm w-full text-center shadow-lg">
           {status === 'checking' && (
             <>
-              <div style={s.spinner}>⏳</div>
-              <h2 style={s.title}>Verifying your payment…</h2>
-              <p style={s.sub}>Please wait while we confirm your payment with the provider.</p>
+              <Loader2 className="h-14 w-14 text-coffee-accent animate-spin mx-auto mb-5" />
+              <h2 className="font-display text-xl font-bold text-foreground mb-2">Verifying your payment…</h2>
+              <p className="text-sm text-muted-foreground">Please wait while we confirm your payment with the provider.</p>
             </>
           )}
 
           {status === 'success' && (
             <>
-              <div style={s.icon}>✅</div>
-              <h2 style={s.title}>Payment confirmed!</h2>
-              <p style={s.sub}>Redirecting you to your order…</p>
+              <CheckCircle2 className="h-14 w-14 text-green-500 mx-auto mb-5" />
+              <h2 className="font-display text-xl font-bold text-foreground mb-2">Payment confirmed!</h2>
+              <p className="text-sm text-muted-foreground">Redirecting you to your order…</p>
             </>
           )}
 
           {status === 'failed' && (
             <>
-              <div style={s.icon}>❌</div>
-              <h2 style={s.title}>Payment failed</h2>
-              <p style={s.sub}>Your payment was not completed. You can try again or choose a different payment method.</p>
-              <div style={s.actions}>
-                <button style={s.primaryBtn} onClick={() => navigate('/checkout')}>Try again</button>
-                <button style={s.secondaryBtn} onClick={() => navigate('/')}>Back to home</button>
+              <XCircle className="h-14 w-14 text-destructive mx-auto mb-5" />
+              <h2 className="font-display text-xl font-bold text-foreground mb-2">Payment failed</h2>
+              <p className="text-sm text-muted-foreground mb-6">Your payment was not completed. You can try again or choose a different payment method.</p>
+              <div className="flex flex-col gap-3">
+                <Button className="btn-hero w-full" onClick={() => navigate('/checkout')}>Try again</Button>
+                <Button variant="outline" className="btn-secondary w-full" onClick={() => navigate('/')}>Back to home</Button>
               </div>
             </>
           )}
 
           {status === 'timeout' && (
             <>
-              <div style={s.icon}>⌛</div>
-              <h2 style={s.title}>Taking longer than expected</h2>
-              <p style={s.sub}>We couldn't confirm your payment yet. Check your orders page — if it appears there, your payment went through.</p>
-              <div style={s.actions}>
-                <button style={s.primaryBtn} onClick={() => navigate('/orders')}>View my orders</button>
-                <button style={s.secondaryBtn} onClick={() => { setStatus('checking') }}>Check again</button>
+              <Clock className="h-14 w-14 text-yellow-500 mx-auto mb-5" />
+              <h2 className="font-display text-xl font-bold text-foreground mb-2">Taking longer than expected</h2>
+              <p className="text-sm text-muted-foreground mb-6">We couldn't confirm your payment yet. Check your orders page — if it appears there, your payment went through.</p>
+              <div className="flex flex-col gap-3">
+                <Button className="btn-hero w-full" onClick={() => navigate('/orders')}>View my orders</Button>
+                <Button variant="outline" className="btn-secondary w-full" onClick={() => setStatus('checking')}>Check again</Button>
               </div>
             </>
           )}
 
           {status === 'unknown' && (
             <>
-              <div style={s.icon}>⚠️</div>
-              <h2 style={s.title}>Payment status unknown</h2>
-              <p style={s.sub}>We could not verify your payment. Check your orders page or contact support with your order reference.</p>
-              {orderRef && <p style={s.ref}>Ref: {orderRef}</p>}
-              <div style={s.actions}>
-                <button style={s.primaryBtn} onClick={() => navigate('/orders')}>View my orders</button>
-                <button style={s.secondaryBtn} onClick={() => navigate('/')}>Back to home</button>
+              <AlertTriangle className="h-14 w-14 text-yellow-500 mx-auto mb-5" />
+              <h2 className="font-display text-xl font-bold text-foreground mb-2">Payment status unknown</h2>
+              <p className="text-sm text-muted-foreground mb-3">We could not verify your payment. Check your orders page or contact support.</p>
+              {orderRef && <p className="text-xs text-muted-foreground font-mono mb-6">Ref: {orderRef}</p>}
+              <div className="flex flex-col gap-3">
+                <Button className="btn-hero w-full" onClick={() => navigate('/orders')}>View my orders</Button>
+                <Button variant="outline" className="btn-secondary w-full" onClick={() => navigate('/')}>Back to home</Button>
               </div>
             </>
           )}
@@ -129,17 +123,4 @@ export default function PaymentReturnPage() {
       </div>
     </Layout>
   )
-}
-
-const s: Record<string, React.CSSProperties> = {
-  wrap: { display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 120px)' },
-  card: { background: '#fff', borderRadius: 16, padding: '48px 40px', maxWidth: 420, width: '100%', textAlign: 'center', boxShadow: '0 2px 20px rgba(0,0,0,0.08)' },
-  spinner: { fontSize: 48, marginBottom: 20 },
-  icon: { fontSize: 48, marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: 700, color: '#111', margin: '0 0 10px' },
-  sub: { fontSize: 14, color: '#666', margin: '0 0 28px', lineHeight: 1.6 },
-  ref: { fontSize: 12, color: '#999', fontFamily: 'monospace', marginBottom: 20 },
-  actions: { display: 'flex', flexDirection: 'column', gap: 10 },
-  primaryBtn: { padding: '13px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
-  secondaryBtn: { padding: '12px', background: 'transparent', color: '#555', border: '1px solid #ddd', borderRadius: 8, fontSize: 14, cursor: 'pointer' },
 }

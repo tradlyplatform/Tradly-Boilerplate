@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSetPasswordMutation } from '@/state/auth/api'
+import { Button } from '@/src/components/ui/button'
+import { Input } from '@/src/components/ui/input'
+import { Label } from '@/src/components/ui/label'
+import { Link } from 'react-router-dom'
+import { ShoppingBag } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -30,37 +35,42 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Reset password</h1>
-        <p style={styles.sub}>Enter the code from your email and choose a new password.</p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 justify-center">
+            <ShoppingBag className="h-8 w-8 text-coffee-accent" />
+            <span className="font-display text-2xl font-bold text-foreground">Tradly</span>
+          </Link>
+        </div>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
+        <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-1">Reset password</h1>
+          <p className="text-sm text-muted-foreground mb-6">Enter the code from your email and choose a new password.</p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <label style={styles.label}>Reset code</label>
-          <input style={styles.input} value={code} onChange={e => setCode(e.target.value)} placeholder="Enter code" required />
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3 text-sm mb-5">
+              {error}
+            </div>
+          )}
 
-          <label style={styles.label}>New password</label>
-          <input style={styles.input} type="password" value={password} onChange={e => setNewPassword(e.target.value)} placeholder="Min. 8 characters" required minLength={8} />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="code">Reset code</Label>
+              <Input id="code" value={code} onChange={e => setCode(e.target.value)} placeholder="Enter code" required />
+            </div>
 
-          <button style={{ ...styles.btn, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
-            {isLoading ? 'Resetting…' : 'Set new password'}
-          </button>
-        </form>
+            <div className="space-y-1.5">
+              <Label htmlFor="password">New password</Label>
+              <Input id="password" type="password" value={password} onChange={e => setNewPassword(e.target.value)} placeholder="Min. 8 characters" required minLength={8} />
+            </div>
+
+            <Button type="submit" disabled={isLoading} className="btn-hero w-full">
+              {isLoading ? 'Resetting…' : 'Set new password'}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   )
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', fontFamily: 'system-ui, sans-serif' },
-  card: { background: '#fff', borderRadius: 12, padding: 40, width: '100%', maxWidth: 400, boxShadow: '0 2px 16px rgba(0,0,0,0.07)' },
-  title: { margin: '0 0 4px', fontSize: 24, fontWeight: 700, color: '#111' },
-  sub: { margin: '0 0 28px', fontSize: 14, color: '#888' },
-  form: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 13, fontWeight: 600, color: '#444', marginTop: 10 },
-  input: { padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14, outline: 'none' },
-  btn: { marginTop: 16, padding: '12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
-  errorBox: { background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13 },
 }

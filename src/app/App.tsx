@@ -71,7 +71,7 @@ export default function App() {
           <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
           <Route path="/payment-return" element={<PaymentReturnPage />} />
-          <Route path="/thank-you/:reference" element={<ProtectedRoute><ThankYouPage /></ProtectedRoute>} />
+          <Route path="/checkouts/:reference/thank-you" element={<ProtectedRoute><ThankYouPage /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
           <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
 

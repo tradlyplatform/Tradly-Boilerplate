@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSignUpMutation } from '@/state/auth/api'
+import { Button } from '@/src/components/ui/button'
+import { Input } from '@/src/components/ui/input'
+import { Label } from '@/src/components/ui/label'
+import { ShoppingBag } from 'lucide-react'
 
 export default function SignUpPage() {
   const navigate = useNavigate()
@@ -24,60 +28,64 @@ export default function SignUpPage() {
       return
     }
 
-    // Store input so OTP screen can call resendOtp without asking again
     sessionStorage.setItem('signup_input', JSON.stringify(input))
     navigate('/verify-otp')
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Create account</h1>
-        <p style={styles.sub}>Join the marketplace</p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 justify-center">
+            <ShoppingBag className="h-8 w-8 text-coffee-accent" />
+            <span className="font-display text-2xl font-bold text-foreground">Tradly</span>
+          </Link>
+        </div>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
+        <div className="bg-card border border-border rounded-2xl p-8 shadow-lg">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-1">Create account</h1>
+          <p className="text-sm text-muted-foreground mb-6">Join the marketplace</p>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={styles.label}>First name</label>
-              <input style={styles.input} value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Jane" required />
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 text-destructive rounded-lg px-4 py-3 text-sm mb-5">
+              {error}
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <label style={styles.label}>Last name</label>
-              <input style={styles.input} value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Doe" required />
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="firstName">First name</Label>
+                <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Jane" required />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="lastName">Last name</Label>
+                <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Doe" required />
+              </div>
             </div>
-          </div>
 
-          <label style={styles.label}>Email</label>
-          <input style={styles.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required />
+            </div>
 
-          <label style={styles.label}>Password</label>
-          <input style={styles.input} type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" required minLength={8} />
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" required minLength={8} />
+            </div>
 
-          <button style={{ ...styles.btn, opacity: isLoading ? 0.7 : 1 }} disabled={isLoading}>
-            {isLoading ? 'Creating account…' : 'Create account'}
-          </button>
-        </form>
+            <Button type="submit" disabled={isLoading} className="btn-hero w-full">
+              {isLoading ? 'Creating account…' : 'Create account'}
+            </Button>
+          </form>
 
-        <p style={styles.footer}>
-          Already have an account? <Link to="/sign-in" style={styles.link}>Sign in</Link>
-        </p>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link to="/sign-in" className="text-coffee-accent hover:underline font-medium">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   )
-}
-
-const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', fontFamily: 'system-ui, sans-serif' },
-  card: { background: '#fff', borderRadius: 12, padding: 40, width: '100%', maxWidth: 440, boxShadow: '0 2px 16px rgba(0,0,0,0.07)' },
-  title: { margin: '0 0 4px', fontSize: 24, fontWeight: 700, color: '#111' },
-  sub: { margin: '0 0 28px', fontSize: 14, color: '#888' },
-  form: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 13, fontWeight: 600, color: '#444', marginTop: 10 },
-  input: { padding: '10px 12px', borderRadius: 8, border: '1px solid #ddd', fontSize: 14, outline: 'none' },
-  btn: { marginTop: 12, padding: '12px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer' },
-  link: { color: '#2563eb', textDecoration: 'none', fontSize: 13 },
-  footer: { marginTop: 24, textAlign: 'center', fontSize: 14, color: '#666' },
-  errorBox: { background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13 },
 }

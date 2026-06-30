@@ -1,6 +1,8 @@
 allowBuilds:
   '@swc/core': set this to true or false
   esbuild: set this to true or false
+minimumReleaseAgeExclude:
+  - tradly@1.2.14
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild

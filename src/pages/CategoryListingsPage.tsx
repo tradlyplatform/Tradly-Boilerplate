@@ -4,9 +4,20 @@ import { useGetCategoryBySlugQuery, useGetCategoryListingsQuery } from '@/state/
 import { useLikeListingMutation, useUnlikeListingMutation } from '@/state/listing/api'
 import { useAuthSelector } from '@/state/auth/selectors'
 import Layout from '../components/Layout'
+import { Button } from '@/src/components/ui/button'
+import { Badge } from '@/src/components/ui/badge'
+import { Heart } from 'lucide-react'
 
 function getCategorySlug(category: { id: string | number; name: string; slug?: string }): string {
   return category.slug ?? `${category.id}-${String(category.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`
+}
+
+function Toast({ msg }: { msg: string }) {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-6 py-3 rounded-full text-sm font-medium shadow-xl z-50">
+      {msg}
+    </div>
+  )
 }
 
 export default function CategoryListingsPage() {
@@ -18,7 +29,6 @@ export default function CategoryListingsPage() {
   const [toast, setToast] = useState('')
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
 
-  // Reset page when slug changes
   useEffect(() => { setPage(1) }, [slug])
 
   const { data: catData, isLoading: catLoading, isError: catError } =
@@ -26,7 +36,6 @@ export default function CategoryListingsPage() {
 
   const category = catData?.category
 
-  // Redirect on bad slug
   useEffect(() => {
     if (!catLoading && catError) navigate('/', { replace: true })
   }, [catLoading, catError])
@@ -49,53 +58,53 @@ export default function CategoryListingsPage() {
     if ('error' in result) showToast('Failed to update like')
   }
 
-  const listings   = listData?.listings ?? []
+  const listings = listData?.listings ?? []
   const totalPages = Math.ceil((listData?.total_records ?? 0) / 30)
   const currentPage = listData?.page ?? page
 
-  if (catLoading) return <Layout><div style={s.center}>Loading…</div></Layout>
+  if (catLoading) return <Layout><div className="text-center py-20 text-muted-foreground text-sm">Loading…</div></Layout>
   if (!category) return null
 
   return (
     <Layout>
-      {toast && <div style={s.toast}>{toast}</div>}
+      {toast && <Toast msg={toast} />}
 
       {/* Breadcrumb */}
-      <div style={s.breadcrumb}>
-        <Link to="/" style={s.breadLink}>Home</Link>
+      <div className="flex items-center gap-1.5 flex-wrap mb-5 text-sm">
+        <Link to="/" className="text-coffee-accent hover:underline">Home</Link>
         {category.hierarchy?.map(item => (
           <React.Fragment key={item.id}>
-            <span style={s.breadSep}>›</span>
-            <Link to={`/lc/${getCategorySlug(item as { id: string | number; name: string; slug?: string })}`} style={s.breadLink}>
+            <span className="text-muted-foreground">›</span>
+            <Link to={`/lc/${getCategorySlug(item as { id: string | number; name: string; slug?: string })}`} className="text-coffee-accent hover:underline">
               {item.name}
             </Link>
           </React.Fragment>
         ))}
-        <span style={s.breadSep}>›</span>
-        <span style={s.breadCurrent}>{category.name}</span>
+        <span className="text-muted-foreground">›</span>
+        <span className="text-foreground font-medium">{category.name}</span>
       </div>
 
       {/* Category header */}
-      <div style={s.catHeader}>
+      <div className="flex items-center gap-4 mb-6">
         {category.image && (
-          <div style={s.catImgWrap}>
-            <img src={category.image} alt={category.name} style={s.catImg} />
+          <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+            <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
           </div>
         )}
         <div>
-          <h1 style={s.catName}>{category.name}</h1>
-          {category.description && <p style={s.catDesc}>{category.description}</p>}
+          <h1 className="font-display text-2xl font-bold text-foreground mb-1">{category.name}</h1>
+          {category.description && <p className="text-sm text-muted-foreground leading-relaxed">{category.description}</p>}
         </div>
       </div>
 
       {/* Subcategory chips */}
       {(category.sub_category?.length ?? 0) > 0 && (
-        <div style={s.subCats}>
+        <div className="flex flex-wrap gap-2 mb-6">
           {category.sub_category!.map(sub => (
             <Link
               key={sub.id}
               to={`/lc/${getCategorySlug(sub as { id: string | number; name: string; slug?: string })}`}
-              style={s.subChip}
+              className="px-4 py-1.5 rounded-full border border-border bg-card text-sm text-foreground font-medium hover:bg-coffee-secondary/40 transition-colors"
             >
               {sub.name}
             </Link>
@@ -103,64 +112,64 @@ export default function CategoryListingsPage() {
         </div>
       )}
 
-      {/* Stats + fetching indicator */}
-      <div style={s.statsRow}>
+      {/* Stats row */}
+      <div className="flex justify-between items-center mb-5">
         {listData?.total_records != null && (
-          <span style={s.countLabel}>{listData.total_records} listing{listData.total_records !== 1 ? 's' : ''}</span>
+          <span className="text-sm text-muted-foreground">{listData.total_records} listing{listData.total_records !== 1 ? 's' : ''}</span>
         )}
-        {isFetching && <span style={s.fetching}>Loading…</span>}
+        {isFetching && <span className="text-xs text-muted-foreground">Loading…</span>}
       </div>
 
-      {/* Listings grid */}
+      {/* Grid */}
       {listLoading ? (
-        <div style={s.center}>Loading listings…</div>
+        <div className="text-center py-16 text-muted-foreground text-sm">Loading listings…</div>
       ) : listings.length === 0 ? (
-        <div style={s.empty}>
-          <p style={{ fontSize: 16, color: '#888' }}>No listings in this category yet.</p>
-        </div>
+        <div className="text-center py-16 text-muted-foreground text-sm">No listings in this category yet.</div>
       ) : (
-        <div style={s.grid}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
           {listings.map(listing => (
-            <Link key={listing.id} to={`/listing/${listing.slug}`} style={s.card}>
-              {/* Image */}
-              <div style={s.cardImgWrap}>
-                {listing.images[0]
-                  ? <img src={listing.images[0]} alt={listing.title} style={s.cardImg} />
-                  : <div style={s.cardImgPlaceholder} />
-                }
-                {listing.offer_percent > 0 && (
-                  <div style={s.discountBadge}>{listing.offer_percent}% OFF</div>
-                )}
-                {listing.stock === 0 && (
-                  <div style={s.outOfStockBadge}>Out of stock</div>
-                )}
-                {/* Like button */}
-                <button
-                  style={s.likeBtn}
-                  onClick={e => { e.preventDefault(); handleLike(listing.id, listing.liked) }}
-                  disabled={isLiking || isUnliking}
-                  title={listing.liked ? 'Unlike' : 'Like'}
-                >
-                  {listing.liked ? '♥' : '♡'}
-                </button>
-              </div>
-
-              {/* Info */}
-              <div style={s.cardBody}>
-                <p style={s.cardSeller}>{listing.account.name}</p>
-                <p style={s.cardTitle}>{listing.title}</p>
-                <div style={s.cardPriceRow}>
-                  <span style={s.cardPrice}>{listing.offer_price.formatted}</span>
+            <Link key={listing.id} to={`/listing/${listing.slug}`} className="block group">
+              <div className="card-product">
+                <div className="aspect-square overflow-hidden bg-coffee-secondary/20 relative">
+                  {listing.images[0]
+                    ? <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    : <div className="w-full h-full bg-muted" />
+                  }
                   {listing.offer_percent > 0 && (
-                    <span style={s.cardOriginal}>{listing.list_price.formatted}</span>
+                    <Badge className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[10px]">
+                      {listing.offer_percent}% off
+                    </Badge>
+                  )}
+                  {listing.stock === 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-foreground/60 text-background text-[11px] text-center py-1">
+                      Out of stock
+                    </div>
+                  )}
+                  <button
+                    className="absolute top-2 right-2 bg-background/80 rounded-full w-7 h-7 flex items-center justify-center text-destructive transition-opacity"
+                    onClick={e => { e.preventDefault(); handleLike(listing.id, listing.liked) }}
+                    disabled={isLiking || isUnliking}
+                  >
+                    <Heart className={`h-3.5 w-3.5 ${listing.liked ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
+
+                <div className="p-3">
+                  <p className="text-[11px] text-muted-foreground mb-0.5">{listing.account.name}</p>
+                  <p className="text-xs font-semibold text-foreground mb-1.5 line-clamp-2 leading-snug">{listing.title}</p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-display text-sm font-bold text-coffee-accent">{listing.offer_price.formatted}</span>
+                    {listing.offer_percent > 0 && (
+                      <span className="text-[11px] text-muted-foreground line-through">{listing.list_price.formatted}</span>
+                    )}
+                  </div>
+                  {listing.rating_data?.rating_average > 0 && (
+                    <p className="text-[11px] text-yellow-500 font-semibold mt-1">
+                      ★ {listing.rating_data.rating_average.toFixed(1)}
+                      <span className="text-muted-foreground font-normal"> ({listing.rating_data.review_count})</span>
+                    </p>
                   )}
                 </div>
-                {listing.rating_data?.rating_average > 0 && (
-                  <p style={s.cardRating}>
-                    ★ {listing.rating_data.rating_average.toFixed(1)}
-                    <span style={s.cardRatingCount}> ({listing.rating_data.review_count})</span>
-                  </p>
-                )}
               </div>
             </Link>
           ))}
@@ -169,63 +178,12 @@ export default function CategoryListingsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div style={s.pagination}>
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={currentPage <= 1}
-            style={s.pageBtn}
-          >
-            ← Prev
-          </button>
-          <span style={s.pageInfo}>Page {currentPage} of {totalPages}</span>
-          <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={currentPage >= totalPages}
-            style={s.pageBtn}
-          >
-            Next →
-          </button>
+        <div className="flex items-center justify-center gap-4 mt-10">
+          <Button variant="outline" className="btn-secondary" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1}>← Prev</Button>
+          <span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
+          <Button variant="outline" className="btn-secondary" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages}>Next →</Button>
         </div>
       )}
     </Layout>
   )
-}
-
-const s: Record<string, React.CSSProperties> = {
-  center: { textAlign: 'center', padding: 80, color: '#888', fontSize: 15 },
-  toast: { position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', padding: '10px 24px', borderRadius: 24, fontSize: 14, zIndex: 1000 },
-  breadcrumb: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 20, flexWrap: 'wrap' },
-  breadLink: { fontSize: 13, color: '#2563eb', textDecoration: 'none' },
-  breadSep: { fontSize: 13, color: '#aaa' },
-  breadCurrent: { fontSize: 13, color: '#555' },
-  catHeader: { display: 'flex', gap: 16, alignItems: 'center', marginBottom: 20 },
-  catImgWrap: { width: 64, height: 64, borderRadius: 10, overflow: 'hidden', flexShrink: 0 },
-  catImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  catName: { fontSize: 24, fontWeight: 700, color: '#111', margin: '0 0 6px' },
-  catDesc: { fontSize: 14, color: '#666', margin: 0, lineHeight: 1.5 },
-  subCats: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 },
-  subChip: { padding: '6px 14px', borderRadius: 20, border: '1px solid #e5e5e5', background: '#fff', fontSize: 13, color: '#333', textDecoration: 'none', fontWeight: 500 },
-  statsRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  countLabel: { fontSize: 14, color: '#888' },
-  fetching: { fontSize: 13, color: '#888' },
-  empty: { textAlign: 'center', padding: '60px 0' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 20 },
-  card: { background: '#fff', borderRadius: 12, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textDecoration: 'none', display: 'block' },
-  cardImgWrap: { position: 'relative', height: 180, background: '#f0f0f0', overflow: 'hidden' },
-  cardImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  cardImgPlaceholder: { width: '100%', height: '100%', background: '#e5e5e5' },
-  discountBadge: { position: 'absolute', top: 8, left: 8, background: '#ef4444', color: '#fff', borderRadius: 4, padding: '2px 7px', fontSize: 11, fontWeight: 700 },
-  outOfStockBadge: { position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', color: '#fff', textAlign: 'center', fontSize: 12, padding: '5px 0' },
-  likeBtn: { position: 'absolute', top: 8, right: 8, background: 'rgba(255,255,255,0.85)', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e11d48' },
-  cardBody: { padding: '12px 14px' },
-  cardSeller: { margin: '0 0 3px', fontSize: 11, color: '#999' },
-  cardTitle: { margin: '0 0 8px', fontSize: 14, fontWeight: 600, color: '#111', lineHeight: 1.3 },
-  cardPriceRow: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 },
-  cardPrice: { fontSize: 15, fontWeight: 700, color: '#111' },
-  cardOriginal: { fontSize: 12, color: '#aaa', textDecoration: 'line-through' },
-  cardRating: { margin: 0, fontSize: 12, color: '#f59e0b', fontWeight: 600 },
-  cardRatingCount: { color: '#999', fontWeight: 400 },
-  pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16, marginTop: 36 },
-  pageBtn: { padding: '8px 18px', border: '1px solid #e5e5e5', background: '#fff', borderRadius: 8, cursor: 'pointer', fontSize: 14, color: '#111' },
-  pageInfo: { fontSize: 14, color: '#555' },
 }

@@ -103,9 +103,10 @@ export const authApi = createApi({
 
     // result.data → { verify_id: string }
     forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordInput>({
-      queryFn: async (input) => {
+      queryFn: async (input, { getState }) => {
+        const { currency, language } = getLocale(getState() as LocalState)
         try {
-          const res = await authAPI.forgotPassword(input)
+          const res = await authAPI.forgotPassword(input, currency, language)
           if (res?.error)
             return { error: { status: 'CUSTOM_ERROR', error: res.error.message ?? 'Request failed' } }
           return { data: { verify_id: res.data!.verify_id } }
@@ -117,9 +118,10 @@ export const authApi = createApi({
 
     // result.data → void
     setPassword: builder.mutation<void, SetPasswordInput>({
-      queryFn: async (input) => {
+      queryFn: async (input, { getState }) => {
+        const { currency, language } = getLocale(getState() as LocalState)
         try {
-          const res = await authAPI.setPassword(input)
+          const res = await authAPI.setPassword(input, currency, language)
           if (res?.error)
             return { error: { status: 'CUSTOM_ERROR', error: res.error.message ?? 'Password reset failed' } }
           return { data: undefined }
