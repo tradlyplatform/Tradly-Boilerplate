@@ -249,10 +249,10 @@ export default function ListingDetailPage() {
 					)}
 				</div>
 
-				{/* Details */}
+					{/* Details */}
 				<div style={s.infoSection}>
 					<p style={s.sellerName}>
-						{listing.account.name}
+						{listing.account?.name ?? "Unknown seller"}
 					</p>
 					<h1 style={s.title}>{listing.title}</h1>
 
@@ -824,4 +824,3 @@ const s: Record<string, React.CSSProperties> = {
 	},
 	description: { fontSize: 14, color: "#555", lineHeight: 1.7 },
 };
-

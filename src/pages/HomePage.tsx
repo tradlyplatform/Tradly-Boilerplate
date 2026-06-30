@@ -8,6 +8,7 @@ import type { Listing } from "@/types/listing.types";
 function ListingCard({ listing }: { listing: Listing }) {
 	const image = listing.images[0];
 	const isInCart = listing.in_cart;
+	const sellerName = listing.account?.name ?? "Unknown seller";
 
 	return (
 		<Link
@@ -54,7 +55,10 @@ function ListingCard({ listing }: { listing: Listing }) {
 					</p>
 					<div style={cardStyles.priceRow}>
 						<span style={cardStyles.price}>
-							{listing.offer_price?.formatted}
+							{
+								listing.offer_price
+									?.formatted
+							}
 						</span>
 						{listing.offer_percent > 0 && (
 							<span
@@ -62,7 +66,11 @@ function ListingCard({ listing }: { listing: Listing }) {
 									cardStyles.listPrice
 								}
 							>
-								{listing.list_price?.formatted}
+								{
+									listing
+										.list_price
+										?.formatted
+								}
 							</span>
 						)}
 					</div>

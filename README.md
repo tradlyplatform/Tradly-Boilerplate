@@ -44,11 +44,11 @@ cp .env.example .env.local
 ```
 
 ```env
-NEXT_PUBLIC_TRADLY_DOMAIN=your-workspace.tradly.co
-NEXT_PUBLIC_TRADLY_PK_KEY=your-public-key
-NEXT_PUBLIC_TRADLY_ENV=production
-NEXT_PUBLIC_DEFAULT_CURRENCY=USD
-NEXT_PUBLIC_DEFAULT_LANGUAGE=en
+VITE_TRADLY_DOMAIN=your-workspace.tradly.co
+VITE_TRADLY_PK_KEY=your-public-key
+VITE_TRADLY_ENV=production
+VITE_DEFAULT_CURRENCY=USD
+VITE_DEFAULT_LANGUAGE=en
 ```
 
 Get your domain and public key from the [Tradly Dashboard](https://tradly.app/dashboard).
@@ -216,11 +216,11 @@ The `flows/` directory contains `.mdc` guides for Cursor and AI-assisted editors
 
 | Variable | Required | Description |
 |---|---|---|
-| `NEXT_PUBLIC_TRADLY_DOMAIN` | Yes | Your workspace domain e.g. `beauty.tradly.co` |
-| `NEXT_PUBLIC_TRADLY_PK_KEY` | Yes | Public key from Tradly dashboard |
-| `NEXT_PUBLIC_TRADLY_ENV` | Yes | `production` / `development` / `sandbox` |
-| `NEXT_PUBLIC_DEFAULT_CURRENCY` | No | Fallback currency code (default: `USD`) |
-| `NEXT_PUBLIC_DEFAULT_LANGUAGE` | No | Fallback language code (default: `en`) |
+| `VITE_TRADLY_DOMAIN` | Yes | Your workspace domain e.g. `beauty.tradly.co` |
+| `VITE_TRADLY_PK_KEY` | Yes | Public key from Tradly dashboard |
+| `VITE_TRADLY_ENV` | Yes | `production` / `development` / `sandbox` |
+| `VITE_DEFAULT_CURRENCY` | No | Fallback currency code (default: `USD`) |
+| `VITE_DEFAULT_LANGUAGE` | No | Fallback language code (default: `en`) |
 
 ---
 
