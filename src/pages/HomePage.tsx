@@ -110,13 +110,15 @@ export default function HomePage() {
     <Layout className="py-8">
       {/* Hero strip */}
       <div className="gradient-warm rounded-2xl px-8 py-10 mb-10 text-center">
+        {/* @sky:design hero-copy — headline + subtitle. Freely rewrite copy/markup; keep the search block below untouched. */}
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
           Discover Amazing Products
         </h1>
         <p className="text-subtitle mb-6 max-w-xl mx-auto">
           Browse our curated marketplace and find exactly what you're looking for.
         </p>
-        {/* Search */}
+        {/* @sky:end */}
+        {/* @sky:logic search — DO NOT EDIT (bound to search/page state) */}
         <div className="relative max-w-md mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -126,6 +128,7 @@ export default function HomePage() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
+        {/* @sky:end */}
       </div>
 
       {/* States */}

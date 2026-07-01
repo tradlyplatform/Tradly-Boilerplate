@@ -15,6 +15,9 @@ import { Separator } from "@/src/components/ui/separator";
 import { Heart, ShoppingCart, Minus, Plus, Star } from "lucide-react";
 import type { AddToCartInput } from "@/types/cart.types";
 
+// @sky:token-only — this page is data/logic-bound (branches on orderType, listing.*, handlers).
+// Personalization re-skins it via design tokens only; it has no @sky:design zone. DO NOT rewrite structurally.
+
 function Toast({ msg }: { msg: string }) {
 	return (
 		<div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-6 py-3 rounded-full text-sm font-medium shadow-xl z-50">
