@@ -8,6 +8,9 @@ interface ImportMeta {
 interface ImportMetaEnv {
   readonly VITE_TRADLY_DOMAIN: string
   readonly VITE_TRADLY_PK_KEY: string
+  readonly VITE_TRADLY_PUBLISHABLE_KEY: string
+  readonly VITE_TRADLY_PUBLIC_KEY: string
+  readonly VITE_TRADLY_BASE_URL: string
   readonly VITE_TRADLY_ENV: string
   readonly VITE_DEFAULT_CURRENCY: string
   readonly VITE_DEFAULT_LANGUAGE: string

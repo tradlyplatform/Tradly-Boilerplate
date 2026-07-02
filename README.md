@@ -46,6 +46,8 @@ cp .env.example .env.local
 ```env
 VITE_TRADLY_DOMAIN=your-workspace.tradly.co
 VITE_TRADLY_PK_KEY=your-public-key
+VITE_TRADLY_PUBLISHABLE_KEY=your-public-key
+VITE_TRADLY_BASE_URL=https://api.tradly.app
 VITE_TRADLY_ENV=production
 VITE_DEFAULT_CURRENCY=USD
 VITE_DEFAULT_LANGUAGE=en
@@ -218,6 +220,8 @@ The `flows/` directory contains `.mdc` guides for Cursor and AI-assisted editors
 |---|---|---|
 | `VITE_TRADLY_DOMAIN` | Yes | Your workspace domain e.g. `beauty.tradly.co` |
 | `VITE_TRADLY_PK_KEY` | Yes | Public key from Tradly dashboard |
+| `VITE_TRADLY_PUBLISHABLE_KEY` | No | Compatibility alias for deployments that use this env name |
+| `VITE_TRADLY_BASE_URL` | No | API base URL, defaults to `https://api.tradly.app` |
 | `VITE_TRADLY_ENV` | Yes | `production` / `development` / `sandbox` |
 | `VITE_DEFAULT_CURRENCY` | No | Fallback currency code (default: `USD`) |
 | `VITE_DEFAULT_LANGUAGE` | No | Fallback language code (default: `en`) |

@@ -100,7 +100,7 @@ export const buildPaymentIntentUrl = (
 	authKey: string,
 	guestEmail?: string,
 ): string => {
-	const base = `https://api.tradly.app/v1/payments/web/paymentIntent`;
+	const base = `${AppConfig.apiBaseUrl}/v1/payments/web/paymentIntent`;
 	const authParam =
 		!authKey && guestEmail
 			? `&guest_email=${encodeURIComponent(guestEmail)}`
@@ -156,4 +156,3 @@ export const directCheckout = (
 			language,
 		),
 	);
-

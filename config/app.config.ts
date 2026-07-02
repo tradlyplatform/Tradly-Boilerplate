@@ -1,11 +1,27 @@
 export type TradlyEnv = "production" | "development" | "sandbox";
 
+const runtimeHost =
+	typeof window !== "undefined" && window.location?.host
+		? window.location.host
+		: "";
+
+const apiBaseUrl = (
+	import.meta.env.VITE_TRADLY_BASE_URL ?? "https://api.tradly.app"
+).replace(/\/+$/, "");
+
 export const AppConfig = {
 	// Your Tradly workspace domain e.g. "beauty.tradly.co"
-	domain: import.meta.env.VITE_TRADLY_DOMAIN ?? "",
+	domain: import.meta.env.VITE_TRADLY_DOMAIN ?? runtimeHost,
 
 	// Public key for this workspace — set in .env, never commit the real value
-	pkKey: import.meta.env.VITE_TRADLY_PK_KEY ?? "",
+	pkKey:
+		import.meta.env.VITE_TRADLY_PK_KEY ??
+		import.meta.env.VITE_TRADLY_PUBLISHABLE_KEY ??
+		import.meta.env.VITE_TRADLY_PUBLIC_KEY ??
+		"",
+
+	// Tradly API base URL. Falls back to the public API for compatibility.
+	apiBaseUrl,
 
 	// Deployment environment
 	env: (import.meta.env.VITE_TRADLY_ENV ?? "production") as TradlyEnv,
@@ -27,4 +43,3 @@ export const AppConfig = {
 } as const;
 
 export type AppConfigType = typeof AppConfig;
-
